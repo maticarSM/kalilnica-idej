@@ -160,4 +160,54 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .btn { padding: 12px 28px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: .95rem; transition: all .2s; display: inline-block; border: none; cursor: pointer; }
 .btn--primary { background: var(--red); color: #fff; }
 .btn--primary:hover { background: var(--red-dark); transform: translateY(-2px); }
-.btn--ghost { background: transparent; color: var(--text​​​​​​​​​​​​​​​​
+.btn--ghost { background: transparent; color: var(--text); border: 2px solid rgba(0,0,0,.15); }
+.btn--ghost:hover { border-color: var(--red); color: var(--red); }
+
+.section__header { text-align: center; margin-bottom: 64px; }
+.section__tag { color: var(--red); font-size: .8rem; font-weight: 600; letter-spacing: .15em; display: block; margin-bottom: 12px; }
+.section__title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; margin-bottom: 16px; }
+
+.blog { padding: 120px 0; background: var(--bg); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.card { background: var(--bg2); border: 1px solid rgba(0,0,0,.06); border-radius: 16px; padding: 32px; transition: all .3s; }
+.card:hover { border-color: rgba(230,51,41,.2); transform: translateY(-4px); box-shadow: 0 20px 40px rgba(230,51,41,.08); }
+.card__top { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.card__cat { color: var(--red); font-size: .8rem; font-weight: 600; }
+.card__time { color: var(--muted); font-size: .8rem; }
+.card__title { font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; line-height: 1.4; }
+.card__excerpt { color: var(--muted); font-size: .9rem; line-height: 1.6; margin-bottom: 24px; }
+.card__link { color: var(--red); font-size: .9rem; font-weight: 600; text-decoration: none; }
+
+.about { padding: 120px 0; background: var(--bg2); }
+.about__inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.about__text p { color: var(--muted); margin-bottom: 16px; line-height: 1.7; }
+.about__text .btn { margin-top: 16px; }
+.about__visual { display: flex; justify-content: center; }
+.about__orb { width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(230,51,41,.15) 0%, transparent 70%); border: 2px solid rgba(230,51,41,.15); }
+
+.newsletter { padding: 120px 0; text-align: center; background: var(--red); }
+.newsletter .section__title { color: #fff; }
+.newsletter .accent { color: #fff; text-decoration: underline; }
+.newsletter__inner p { color: rgba(255,255,255,.8); margin: 16px 0 40px; }
+.newsletter__form { display: flex; gap: 12px; max-width: 480px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+.newsletter__input { flex: 1; min-width: 200px; background: #fff; border: none; color: var(--text); padding: 12px 20px; border-radius: 10px; font-size: .95rem; outline: none; }
+.newsletter .btn--primary { background: var(--text); color: #fff; }
+
+.footer { background: var(--text); padding: 64px 0 32px; }
+.footer__inner { display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; flex-wrap: wrap; margin-bottom: 48px; }
+.footer .logo__text { color: #fff; }
+.footer__brand p { color: rgba(255,255,255,.5); font-size: .9rem; margin-top: 8px; }
+.footer__links, .footer__social { display: flex; flex-direction: column; gap: 12px; }
+.footer__links a, .footer__social a { color: rgba(255,255,255,.5); text-decoration: none; font-size: .9rem; transition: color .2s; }
+.footer__links a:hover, .footer__social a:hover { color: #fff; }
+.footer__copy { text-align: center; color: rgba(255,255,255,.3); font-size: .8rem; border-top: 1px solid rgba(255,255,255,.1); padding-top: 32px; }
+
+@media (max-width: 768px) {
+  .nav { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fff; flex-direction: column; justify-content: center; align-items: center; gap: 40px; }
+  .nav.open { display: flex; }
+  .nav__link { font-size: 1.5rem; color: var(--text); }
+  .burger { display: flex; z-index: 200; }
+  .about__inner { grid-template-columns: 1fr; }
+  .about__visual { display: none; }
+}
+</style>
