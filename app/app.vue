@@ -133,7 +133,7 @@ body {
 .post__link:hover { gap: 10px; color: var(--cyan-lt); }
 
 /* ── FOOTER ── */
-.footer { padding: 64px 0 0; border-top: 1px solid var(--border); position: relative; z-index: 1; background: var(--bg); }
+.footer { padding: 64px 0 0; border-top: 1px solid var(--border); }
 .footer__grid { display: grid; grid-template-columns: 1fr 2fr; gap: 60px; padding-bottom: 60px; }
 .footer__brand { display: flex; flex-direction: column; gap: 14px; max-width: 260px; }
 .footer__brand p { color: var(--dim); font-size: .87rem; }

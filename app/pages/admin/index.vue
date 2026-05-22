@@ -54,6 +54,9 @@
                 Ogled
               </NuxtLink>
               <button class="btn btn--ghost btn--sm" @click="openForm(p)">✏️ Uredi</button>
+              <button class="btn btn--ghost btn--sm adm-notify-btn" :disabled="notifying === p.slug" @click="notifySubscribers(p)">
+                {{ notifying === p.slug ? '📨 Pošiljam...' : notified === p.slug ? '✓ Poslano!' : '📬 Obvesti' }}
+              </button>
               <button class="btn btn--danger btn--sm" @click="deletePost(p.slug)">🗑️ Izbriši</button>
             </div>
           </div>
@@ -233,6 +236,25 @@ const deletePost = async (slug) => {
   if (!confirm(`Izbriši "${slug}"? Tega ni mogoče razveljaviti.`)) return
   await $fetch(`/api/posts/${slug}`, { method: 'DELETE' })
   await loadPosts()
+}
+
+// ── NOTIFY ──
+const notifying = ref('')
+const notified  = ref('')
+
+const notifySubscribers = async (post) => {
+  if (!confirm(`Pošlji obvestilo o "${post.title}" vsem naročnikom?`)) return
+  notifying.value = post.slug
+  try {
+    const res = await $fetch('/api/notify', { method: 'POST', body: { password: ADMIN_PWD, slug: post.slug } })
+    notified.value = post.slug
+    alert(`✓ Obvestilo poslano ${res.sent} naročnikom.`)
+    setTimeout(() => { if (notified.value === post.slug) notified.value = '' }, 4000)
+  } catch (e) {
+    alert('Napaka: ' + (e?.data?.message || e.message))
+  } finally {
+    notifying.value = ''
+  }
 }
 
 const insertTab = (e) => {

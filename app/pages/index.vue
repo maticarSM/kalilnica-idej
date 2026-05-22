@@ -1,8 +1,8 @@
 <template>
   <div class="site">
 
-    <!-- Fixed 3D canvas — sits behind all sections -->
-    <canvas ref="heroCanvas" class="bg-canvas"></canvas>
+    <!-- UNSUB / SYSTEM TOAST -->
+    <div v-if="toast" class="sys-toast">{{ toast }}</div>
 
     <!-- HEADER -->
     <header class="header" :class="{ scrolled: isScrolled }">
@@ -25,6 +25,7 @@
 
     <!-- HERO -->
     <section id="hero" class="hero">
+      <canvas ref="heroCanvas" class="hero__canvas"></canvas>
       <div class="hero__glow hero__glow--a"></div>
       <div class="hero__glow hero__glow--b"></div>
       <div class="container hero__body">
@@ -60,14 +61,6 @@
       <button class="hero__scroll" @click="scrollTo('blog')">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3v12M4 10l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-    </section>
-
-    <!-- SCROLL 3D INTERLUDE — transparent so fixed canvas fills view -->
-    <section class="scroll3d">
-      <div class="scroll3d__label reveal">
-        <span class="scroll3d__dot"></span>
-        Premikajte miško — vesolje je živo
-      </div>
     </section>
 
     <!-- BLOG -->
@@ -166,10 +159,13 @@
         <h2 class="nl__title">Ne zamudite <span class="grad-text">nobene ideje</span></h2>
         <p class="nl__sub">Vsak teden ena misel, ki bo morda spremenila vaš dan.</p>
         <form class="nl__form" @submit.prevent="subscribe">
-          <input v-model="email" type="email" placeholder="vas@email.com" class="nl__input" />
-          <button type="submit" class="btn btn--primary" :disabled="subscribed">{{ subscribed ? '✓ Prijavljeni!' : 'Prijava' }}</button>
+          <input v-model="email" type="email" placeholder="vas@email.com" class="nl__input" :disabled="subscribed || subLoading" />
+          <button type="submit" class="btn btn--primary" :disabled="subscribed || subLoading">
+            {{ subscribed ? '✓ Prijavljeni!' : subLoading ? 'Pošiljam...' : 'Prijava' }}
+          </button>
         </form>
-        <p class="nl__note">Brez neželene pošte · Odjava kadarkoli</p>
+        <p v-if="subError" class="nl__note" style="color:#fca5a5">{{ subError }}</p>
+        <p v-else class="nl__note">Brez neželene pošte · Odjava kadarkoli</p>
       </div>
     </section>
 
@@ -210,19 +206,39 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const { data: posts } = await useAsyncData('posts', () => $fetch('/api/posts'))
 
-const isScrolled = ref(false)
-const menuOpen   = ref(false)
-const email      = ref('')
-const subscribed = ref(false)
-const heroCanvas = ref(null)
+const route = useRoute()
+const toast = ref('')
+if (import.meta.client) {
+  const p = new URLSearchParams(location.search)
+  if (p.get('unsub') === 'ok') { toast.value = '✓ Uspešno odjavljeni od obvestil.'; history.replaceState(null,'','/') }
+  if (p.get('unsub') === 'error') { toast.value = '⚠ Napaka pri odjavi. Poskusite znova.'; history.replaceState(null,'','/') }
+}
+const isScrolled  = ref(false)
+const menuOpen    = ref(false)
+const email       = ref('')
+const subscribed  = ref(false)
+const subLoading  = ref(false)
+const subError    = ref('')
+const heroCanvas  = ref(null)
 let raf = null, renderer = null, resizeH = null
 const mouse = { x: 0, y: 0 }
 
 const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-const subscribe = () => {
+
+const subscribe = async () => {
   if (!email.value) return
-  subscribed.value = true
-  setTimeout(() => { subscribed.value = false; email.value = '' }, 3000)
+  subLoading.value = true
+  subError.value = ''
+  try {
+    await $fetch('/api/subscribe', { method: 'POST', body: { email: email.value } })
+    subscribed.value = true
+    email.value = ''
+    setTimeout(() => { subscribed.value = false }, 6000)
+  } catch (e) {
+    subError.value = e?.data?.message || 'Napaka pri prijavi. Poskusite znova.'
+  } finally {
+    subLoading.value = false
+  }
 }
 
 const initThree = async () => {
@@ -231,13 +247,12 @@ const initThree = async () => {
   const THREE = await import('three')
   const W = window.innerWidth, H = window.innerHeight
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(58, W / H, 0.1, 200)
+  const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 100)
   camera.position.set(0, 0, 6)
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setSize(W, H)
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
 
-  // Planet
   const sphere = new THREE.Mesh(
     new THREE.IcosahedronGeometry(2, 3),
     new THREE.MeshBasicMaterial({ color: 0x4F46E5, wireframe: true, transparent: true, opacity: 0.22 })
@@ -256,50 +271,27 @@ const initThree = async () => {
     new THREE.MeshBasicMaterial({ color: 0x06B6D4, transparent: true, opacity: 0.3 })
   )
   ring2.rotation.x = 0.5; ring2.rotation.y = 0.8
-  const planet = new THREE.Group()
-  planet.add(sphere, shell, ring1, ring2)
-  scene.add(planet)
 
-  // Star field — wide spread so when hero content scrolls away, more universe is visible
-  const N = 5000, pos = new Float32Array(N * 3)
+  const group = new THREE.Group()
+  group.add(sphere, shell, ring1, ring2)
+  group.position.x = 0
+  scene.add(group)
+
+  const N = 3000, pos = new Float32Array(N * 3)
   for (let i = 0; i < N; i++) {
-    pos[i*3]   = (Math.random() - .5) * 70
-    pos[i*3+1] = (Math.random() - .5) * 50
-    pos[i*3+2] = (Math.random() - .5) * 60
+    pos[i*3]=(Math.random()-.5)*24; pos[i*3+1]=(Math.random()-.5)*20; pos[i*3+2]=(Math.random()-.5)*14
   }
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.045, color: 0x818CF8, transparent: true, opacity: 0.45 })))
+  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.022, color: 0x818CF8, transparent: true, opacity: 0.4 })))
 
-  // Distant nebula glow — large transparent spheres far back
-  const nebMat = (c) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.025, wireframe: false })
-  const neb1 = new THREE.Mesh(new THREE.SphereGeometry(8, 8, 8), nebMat(0x4F46E5))
-  neb1.position.set(-12, 4, -20)
-  const neb2 = new THREE.Mesh(new THREE.SphereGeometry(6, 8, 8), nebMat(0x06B6D4))
-  neb2.position.set(14, -6, -25)
-  scene.add(neb1, neb2)
-
-  let t = 0
   const animate = () => {
     raf = requestAnimationFrame(animate)
-    t += 0.003
-
-    // Planet self-rotation
-    sphere.rotation.y += .002; sphere.rotation.x += .0008
-    shell.rotation.y  -= .001; shell.rotation.z  += .0008
-    ring1.rotation.z  += .004; ring2.rotation.z  -= .0025
-
-    // Mouse tilts the planet — interactive
-    planet.rotation.y += (mouse.x * .35 - planet.rotation.y) * .05
-    planet.rotation.x += (-mouse.y * .22 - planet.rotation.x) * .05
-
-    // Camera gently drifts — floating in space, follows mouse softly
-    // Scroll does NOT move the camera — 3D stays at top
-    camera.position.x += (mouse.x * 0.3 + Math.sin(t * 0.35) * 0.12 - camera.position.x) * 0.04
-    camera.position.y += (-mouse.y * 0.2 + Math.sin(t * 0.25) * 0.1  - camera.position.y) * 0.04
-    camera.position.z = 6
-    camera.lookAt(0, 0, 0)
-
+    sphere.rotation.y += .003; sphere.rotation.x += .001
+    shell.rotation.y -= .0015; shell.rotation.z += .001
+    ring1.rotation.z += .005; ring2.rotation.z -= .003
+    group.rotation.y += (mouse.x * .35 - group.rotation.y) * .04
+    group.rotation.x += (-mouse.y * .18 - group.rotation.x) * .04
     renderer.render(scene, camera)
   }
   animate()
@@ -339,12 +331,10 @@ const features = [
 </script>
 
 <style>
-/* Fixed 3D canvas */
-.bg-canvas { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
-
 /* HERO */
-.hero { position:relative; z-index:1; min-height:100vh; display:flex; align-items:center; overflow:hidden; padding:110px 0 90px; background:transparent; }
-.hero__glow { position:absolute; border-radius:50%; filter:blur(90px); pointer-events:none; z-index:0; }
+.hero { position:relative; min-height:100vh; display:flex; align-items:center; overflow:hidden; padding:110px 0 90px; }
+.hero__canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.hero__glow { position:absolute; border-radius:50%; filter:blur(90px); pointer-events:none; }
 .hero__glow--a { width:55vw; height:55vw; top:-18%; left:-12%; background:radial-gradient(circle,rgba(79,70,229,.16),transparent 65%); }
 .hero__glow--b { width:35vw; height:35vw; bottom:-5%; right:8%; background:radial-gradient(circle,rgba(6,182,212,.11),transparent 65%); }
 .hero__body { position:relative; z-index:1; display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:48px; width:100%; }
@@ -363,18 +353,8 @@ const features = [
 .hero__scroll { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); width:44px; height:44px; border-radius:50%; background:var(--glass); border:1px solid var(--border); backdrop-filter:blur(12px); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); transition:all .3s; animation:bob 3s ease-in-out infinite; }
 .hero__scroll:hover { border-color:var(--ba); color:var(--blue-lt); }
 
-/* SCROLL 3D INTERLUDE */
-.scroll3d { min-height:100vh; display:flex; align-items:flex-end; justify-content:center; position:relative; z-index:1; background:transparent; padding-bottom:60px; }
-.scroll3d__label {
-  display:inline-flex; align-items:center; gap:10px;
-  background:rgba(7,7,15,0.55); backdrop-filter:blur(14px);
-  border:1px solid var(--border); color:var(--muted);
-  padding:10px 22px; border-radius:100px; font-size:.8rem; letter-spacing:.05em;
-}
-.scroll3d__dot { width:7px; height:7px; border-radius:50%; background:var(--cyan); box-shadow:0 0 9px var(--cyan); animation:blink 2s ease-in-out infinite; flex-shrink:0; }
-
 /* BLOG */
-.blog { padding:120px 0; background:var(--bg2); position:relative; z-index:1; }
+.blog { padding:120px 0; background:var(--bg2); }
 .sec-head { text-align:center; margin-bottom:60px; }
 .post--feat { display:grid; grid-template-columns:1.15fr 1fr; background:var(--glass); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; backdrop-filter:blur(10px); margin-bottom:24px; transition:border-color .3s,box-shadow .3s; text-decoration:none; color:inherit; }
 .post--feat:hover { border-color:var(--ba); box-shadow:0 28px 70px rgba(79,70,229,.14); }
@@ -386,7 +366,7 @@ const features = [
 .blog-empty a { color:var(--blue-lt); text-decoration:none; }
 
 /* ABOUT */
-.about { padding:120px 0; position:relative; z-index:1; background:var(--bg); }
+.about { padding:120px 0; }
 .about__grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
 .about__text { color:var(--muted); line-height:1.8; margin-top:16px; }
 .about__list { list-style:none; display:flex; flex-direction:column; gap:14px; margin-top:20px; }
@@ -405,7 +385,7 @@ const features = [
 .about__orb--b { width:200px; height:200px; background:rgba(6,182,212,.08); bottom:-60px; left:-40px; }
 
 /* NEWSLETTER */
-.nl { padding:120px 0; background:var(--bg2); position:relative; z-index:1; overflow:hidden; }
+.nl { padding:120px 0; background:var(--bg2); position:relative; overflow:hidden; }
 .nl__bg { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:700px; height:350px; background:radial-gradient(ellipse,rgba(79,70,229,.1),transparent); pointer-events:none; }
 .nl__wrap { position:relative; text-align:center; display:flex; flex-direction:column; align-items:center; gap:18px; max-width:580px; margin:0 auto; }
 .nl__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:clamp(1.9rem,3.5vw,2.8rem); font-weight:800; letter-spacing:-.04em; color:#fff; }
@@ -435,4 +415,14 @@ const features = [
   .hero__scroll { display:none; }
   .hero__logo-col { max-width:300px; }
 }
+
+/* SYSTEM TOAST */
+.sys-toast {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+  background:rgba(13,13,31,.95); border:1px solid var(--ba); color:var(--text);
+  padding:12px 24px; border-radius:100px; font-size:.85rem; z-index:9999;
+  backdrop-filter:blur(16px); white-space:nowrap; pointer-events:none;
+  animation: toast-in .3s ease;
+}
+@keyframes toast-in { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 </style>
