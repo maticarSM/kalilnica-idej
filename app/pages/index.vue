@@ -212,13 +212,14 @@ if (import.meta.client) {
   if (p.get('unsub') === 'ok') { toast.value = '✓ Uspešno odjavljeni od obvestil.'; history.replaceState(null,'','/') }
   if (p.get('unsub') === 'error') { toast.value = '⚠ Napaka pri odjavi. Poskusite znova.'; history.replaceState(null,'','/') }
 }
-const isScrolled  = ref(false)
-const menuOpen    = ref(false)
-const email       = ref('')
-const subscribed  = ref(false)
-const subLoading  = ref(false)
-const subError    = ref('')
-const heroCanvas  = ref(null)
+const isScrolled     = ref(false)
+const menuOpen       = ref(false)
+const email          = ref('')
+const subscribed     = ref(false)
+const subLoading     = ref(false)
+const subError       = ref('')
+const heroCanvas     = ref(null)
+const scrollProgress = ref(0)
 let raf = null, renderer = null, resizeH = null
 const mouse = { x: 0, y: 0 }
 
@@ -246,12 +247,13 @@ const initThree = async () => {
   const THREE = await import('three')
   const W = window.innerWidth, H = window.innerHeight
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 100)
-  camera.position.set(0, 0, 6)
+  const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 200)
+  camera.position.set(0, 0, 8)
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setSize(W, H)
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
 
+  // Planet at origin — camera flies toward it
   const sphere = new THREE.Mesh(
     new THREE.IcosahedronGeometry(2, 3),
     new THREE.MeshBasicMaterial({ color: 0x4F46E5, wireframe: true, transparent: true, opacity: 0.22 })
@@ -270,27 +272,45 @@ const initThree = async () => {
     new THREE.MeshBasicMaterial({ color: 0x06B6D4, transparent: true, opacity: 0.3 })
   )
   ring2.rotation.x = 0.5; ring2.rotation.y = 0.8
+  const planet = new THREE.Group()
+  planet.add(sphere, shell, ring1, ring2)
+  scene.add(planet)
 
-  const group = new THREE.Group()
-  group.add(sphere, shell, ring1, ring2)
-  group.position.x = 0
-  scene.add(group)
-
-  const N = 3000, pos = new Float32Array(N * 3)
+  // Stars deep in z-axis — rushing past camera as it flies forward
+  const N = 4500, pos = new Float32Array(N * 3)
   for (let i = 0; i < N; i++) {
-    pos[i*3]=(Math.random()-.5)*24; pos[i*3+1]=(Math.random()-.5)*20; pos[i*3+2]=(Math.random()-.5)*14
+    pos[i*3]   = (Math.random() - .5) * 60
+    pos[i*3+1] = (Math.random() - .5) * 40
+    pos[i*3+2] = (Math.random() - .5) * 80
   }
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.022, color: 0x818CF8, transparent: true, opacity: 0.4 })))
+  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.055, color: 0x818CF8, transparent: true, opacity: 0.5 })))
 
+  let camZ = 8, camY = 0
   const animate = () => {
     raf = requestAnimationFrame(animate)
-    sphere.rotation.y += .003; sphere.rotation.x += .001
-    shell.rotation.y -= .0015; shell.rotation.z += .001
-    ring1.rotation.z += .005; ring2.rotation.z -= .003
-    group.rotation.y += (mouse.x * .35 - group.rotation.y) * .04
-    group.rotation.x += (-mouse.y * .18 - group.rotation.x) * .04
+    const sp = scrollProgress.value
+
+    // Camera flies forward into the planet as you scroll
+    const targetZ = 8 - sp * 5.8
+    const targetY = sp * 0.6
+    camZ += (targetZ - camZ) * 0.06
+    camY += (targetY - camY) * 0.06
+    camera.position.z = camZ
+    camera.position.y = camY + Math.sin(Date.now() * 0.0005) * 0.08
+    camera.position.x = mouse.x * 0.3
+    camera.lookAt(0, 0, 0)
+
+    // Planet self-rotation
+    sphere.rotation.y += .002; sphere.rotation.x += .0008
+    shell.rotation.y  -= .001; shell.rotation.z  += .0008
+    ring1.rotation.z  += .004; ring2.rotation.z  -= .0025
+
+    // Mouse tilts the planet
+    planet.rotation.y += (mouse.x * .15 - planet.rotation.y) * .03
+    planet.rotation.x += (-mouse.y * .1  - planet.rotation.x) * .03
+
     renderer.render(scene, camera)
   }
   animate()
@@ -299,7 +319,11 @@ const initThree = async () => {
   window.addEventListener('resize', resizeH)
 }
 
-const onScroll = () => { isScrolled.value = window.scrollY > 40 }
+const onScroll = () => {
+  isScrolled.value = window.scrollY > 40
+  const max = document.documentElement.scrollHeight - window.innerHeight
+  scrollProgress.value = max > 0 ? Math.min(window.scrollY / max, 1) : 0
+}
 const onMouse  = (e) => { mouse.x=(e.clientX/innerWidth-.5)*2; mouse.y=-(e.clientY/innerHeight-.5)*2 }
 
 onMounted(async () => {
