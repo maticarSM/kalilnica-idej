@@ -233,12 +233,13 @@ const initThree = async () => {
   const THREE = await import('three')
   const W = window.innerWidth, H = window.innerHeight
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 100)
-  camera.position.set(0, 0, 6)
+  const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 200)
+  camera.position.set(0, 0, 8)
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setSize(W, H)
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
 
+  // The "planet" — sits at origin, camera flies toward it
   const sphere = new THREE.Mesh(
     new THREE.IcosahedronGeometry(2, 3),
     new THREE.MeshBasicMaterial({ color: 0x4F46E5, wireframe: true, transparent: true, opacity: 0.22 })
@@ -258,31 +259,47 @@ const initThree = async () => {
   )
   ring2.rotation.x = 0.5; ring2.rotation.y = 0.8
 
-  const group = new THREE.Group()
-  group.add(sphere, shell, ring1, ring2)
-  scene.add(group)
+  const planet = new THREE.Group()
+  planet.add(sphere, shell, ring1, ring2)
+  scene.add(planet)
 
-  const N = 3000, pos = new Float32Array(N * 3)
+  // Stars scattered deep in space — wide and deep z range
+  const N = 4500, pos = new Float32Array(N * 3)
   for (let i = 0; i < N; i++) {
-    pos[i*3]=(Math.random()-.5)*24; pos[i*3+1]=(Math.random()-.5)*20; pos[i*3+2]=(Math.random()-.5)*14
+    pos[i*3]   = (Math.random() - .5) * 60
+    pos[i*3+1] = (Math.random() - .5) * 40
+    pos[i*3+2] = (Math.random() - .5) * 80   // deep z spread for fly-through parallax
   }
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.022, color: 0x818CF8, transparent: true, opacity: 0.4 })))
+  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.055, color: 0x818CF8, transparent: true, opacity: 0.5 })))
+
+  // Smooth camera z — lags slightly behind scroll for cinematic feel
+  let camZ = 8, camY = 0
 
   const animate = () => {
     raf = requestAnimationFrame(animate)
     const sp = scrollProgress.value
-    sphere.rotation.y += .003 + sp * .005
-    sphere.rotation.x += .001
-    shell.rotation.y -= .0015; shell.rotation.z += .001
-    ring1.rotation.z += .005; ring2.rotation.z -= .003
-    // Scroll drives tilt + scale of the whole group
-    const tY = mouse.x * .35 + sp * Math.PI * 0.9
-    const tX = -mouse.y * .18 + sp * 0.5
-    group.rotation.y += (tY - group.rotation.y) * .04
-    group.rotation.x += (tX - group.rotation.x) * .04
-    group.scale.setScalar(1 + sp * 0.35)
+
+    // Target: fly from z=8 toward z=2 (just past the planet surface)
+    const targetZ = 8 - sp * 5.8
+    const targetY = sp * 0.6       // drift slightly upward as we approach
+    camZ += (targetZ - camZ) * 0.06
+    camY += (targetY - camY) * 0.06
+    camera.position.z = camZ
+    camera.position.y = camY + Math.sin(Date.now() * 0.0005) * 0.08  // gentle float
+    camera.position.x = mouse.x * 0.3
+    camera.lookAt(0, 0, 0)
+
+    // Planet slow self-rotation — independent of camera
+    sphere.rotation.y += .002; sphere.rotation.x += .0008
+    shell.rotation.y  -= .001; shell.rotation.z  += .0008
+    ring1.rotation.z  += .004; ring2.rotation.z  -= .0025
+
+    // Subtle mouse tilt on planet itself
+    planet.rotation.y += (mouse.x * .15 - planet.rotation.y) * .03
+    planet.rotation.x += (-mouse.y * .1 - planet.rotation.x) * .03
+
     renderer.render(scene, camera)
   }
   animate()
