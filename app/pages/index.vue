@@ -62,12 +62,11 @@
       </button>
     </section>
 
-    <!-- SCROLL 3D INTERLUDE -->
+    <!-- SCROLL 3D INTERLUDE — transparent so fixed canvas fills view -->
     <section class="scroll3d">
-      <div class="container scroll3d__inner">
-        <p class="eyebrow reveal">Vstopite v kalilnico</p>
-        <h2 class="scroll3d__title reveal">Ideje, ki <span class="grad-text">vzkalijo</span></h2>
-        <p class="scroll3d__sub reveal">Vsak premik prinese novo perspektivo.</p>
+      <div class="scroll3d__label reveal">
+        <span class="scroll3d__dot"></span>
+        Premikajte miško — vesolje je živo
       </div>
     </section>
 
@@ -211,12 +210,11 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const { data: posts } = await useAsyncData('posts', () => $fetch('/api/posts'))
 
-const isScrolled    = ref(false)
-const menuOpen      = ref(false)
-const email         = ref('')
-const subscribed    = ref(false)
-const heroCanvas    = ref(null)
-const scrollProgress = ref(0)
+const isScrolled = ref(false)
+const menuOpen   = ref(false)
+const email      = ref('')
+const subscribed = ref(false)
+const heroCanvas = ref(null)
 let raf = null, renderer = null, resizeH = null
 const mouse = { x: 0, y: 0 }
 
@@ -233,13 +231,13 @@ const initThree = async () => {
   const THREE = await import('three')
   const W = window.innerWidth, H = window.innerHeight
   const scene = new THREE.Scene()
-  const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 200)
-  camera.position.set(0, 0, 8)
+  const camera = new THREE.PerspectiveCamera(58, W / H, 0.1, 200)
+  camera.position.set(0, 0, 6)
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setSize(W, H)
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
 
-  // The "planet" — sits at origin, camera flies toward it
+  // Planet
   const sphere = new THREE.Mesh(
     new THREE.IcosahedronGeometry(2, 3),
     new THREE.MeshBasicMaterial({ color: 0x4F46E5, wireframe: true, transparent: true, opacity: 0.22 })
@@ -258,47 +256,49 @@ const initThree = async () => {
     new THREE.MeshBasicMaterial({ color: 0x06B6D4, transparent: true, opacity: 0.3 })
   )
   ring2.rotation.x = 0.5; ring2.rotation.y = 0.8
-
   const planet = new THREE.Group()
   planet.add(sphere, shell, ring1, ring2)
   scene.add(planet)
 
-  // Stars scattered deep in space — wide and deep z range
-  const N = 4500, pos = new Float32Array(N * 3)
+  // Star field — wide spread so when hero content scrolls away, more universe is visible
+  const N = 5000, pos = new Float32Array(N * 3)
   for (let i = 0; i < N; i++) {
-    pos[i*3]   = (Math.random() - .5) * 60
-    pos[i*3+1] = (Math.random() - .5) * 40
-    pos[i*3+2] = (Math.random() - .5) * 80   // deep z spread for fly-through parallax
+    pos[i*3]   = (Math.random() - .5) * 70
+    pos[i*3+1] = (Math.random() - .5) * 50
+    pos[i*3+2] = (Math.random() - .5) * 60
   }
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.055, color: 0x818CF8, transparent: true, opacity: 0.5 })))
+  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.045, color: 0x818CF8, transparent: true, opacity: 0.45 })))
 
-  // Smooth camera z — lags slightly behind scroll for cinematic feel
-  let camZ = 8, camY = 0
+  // Distant nebula glow — large transparent spheres far back
+  const nebMat = (c) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.025, wireframe: false })
+  const neb1 = new THREE.Mesh(new THREE.SphereGeometry(8, 8, 8), nebMat(0x4F46E5))
+  neb1.position.set(-12, 4, -20)
+  const neb2 = new THREE.Mesh(new THREE.SphereGeometry(6, 8, 8), nebMat(0x06B6D4))
+  neb2.position.set(14, -6, -25)
+  scene.add(neb1, neb2)
 
+  let t = 0
   const animate = () => {
     raf = requestAnimationFrame(animate)
-    const sp = scrollProgress.value
+    t += 0.003
 
-    // Target: fly from z=8 toward z=2 (just past the planet surface)
-    const targetZ = 8 - sp * 5.8
-    const targetY = sp * 0.6       // drift slightly upward as we approach
-    camZ += (targetZ - camZ) * 0.06
-    camY += (targetY - camY) * 0.06
-    camera.position.z = camZ
-    camera.position.y = camY + Math.sin(Date.now() * 0.0005) * 0.08  // gentle float
-    camera.position.x = mouse.x * 0.3
-    camera.lookAt(0, 0, 0)
-
-    // Planet slow self-rotation — independent of camera
+    // Planet self-rotation
     sphere.rotation.y += .002; sphere.rotation.x += .0008
     shell.rotation.y  -= .001; shell.rotation.z  += .0008
     ring1.rotation.z  += .004; ring2.rotation.z  -= .0025
 
-    // Subtle mouse tilt on planet itself
-    planet.rotation.y += (mouse.x * .15 - planet.rotation.y) * .03
-    planet.rotation.x += (-mouse.y * .1 - planet.rotation.x) * .03
+    // Mouse tilts the planet — interactive
+    planet.rotation.y += (mouse.x * .35 - planet.rotation.y) * .05
+    planet.rotation.x += (-mouse.y * .22 - planet.rotation.x) * .05
+
+    // Camera gently drifts — floating in space, follows mouse softly
+    // Scroll does NOT move the camera — 3D stays at top
+    camera.position.x += (mouse.x * 0.3 + Math.sin(t * 0.35) * 0.12 - camera.position.x) * 0.04
+    camera.position.y += (-mouse.y * 0.2 + Math.sin(t * 0.25) * 0.1  - camera.position.y) * 0.04
+    camera.position.z = 6
+    camera.lookAt(0, 0, 0)
 
     renderer.render(scene, camera)
   }
@@ -308,11 +308,7 @@ const initThree = async () => {
   window.addEventListener('resize', resizeH)
 }
 
-const onScroll = () => {
-  isScrolled.value = window.scrollY > 40
-  const max = document.documentElement.scrollHeight - window.innerHeight
-  scrollProgress.value = max > 0 ? Math.min(window.scrollY / max, 1) : 0
-}
+const onScroll = () => { isScrolled.value = window.scrollY > 40 }
 const onMouse  = (e) => { mouse.x=(e.clientX/innerWidth-.5)*2; mouse.y=-(e.clientY/innerHeight-.5)*2 }
 
 onMounted(async () => {
@@ -368,10 +364,14 @@ const features = [
 .hero__scroll:hover { border-color:var(--ba); color:var(--blue-lt); }
 
 /* SCROLL 3D INTERLUDE */
-.scroll3d { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; z-index:1; background:transparent; }
-.scroll3d__inner { text-align:center; display:flex; flex-direction:column; align-items:center; gap:20px; }
-.scroll3d__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:clamp(2.4rem,5vw,4rem); font-weight:800; letter-spacing:-.045em; color:#fff; line-height:1.1; }
-.scroll3d__sub { font-size:1.06rem; color:var(--muted); max-width:420px; line-height:1.8; }
+.scroll3d { min-height:100vh; display:flex; align-items:flex-end; justify-content:center; position:relative; z-index:1; background:transparent; padding-bottom:60px; }
+.scroll3d__label {
+  display:inline-flex; align-items:center; gap:10px;
+  background:rgba(7,7,15,0.55); backdrop-filter:blur(14px);
+  border:1px solid var(--border); color:var(--muted);
+  padding:10px 22px; border-radius:100px; font-size:.8rem; letter-spacing:.05em;
+}
+.scroll3d__dot { width:7px; height:7px; border-radius:50%; background:var(--cyan); box-shadow:0 0 9px var(--cyan); animation:blink 2s ease-in-out infinite; flex-shrink:0; }
 
 /* BLOG */
 .blog { padding:120px 0; background:var(--bg2); position:relative; z-index:1; }
