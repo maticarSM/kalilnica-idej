@@ -206,7 +206,6 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const { data: posts } = await useAsyncData('posts', () => $fetch('/api/posts'))
 
-const route = useRoute()
 const toast = ref('')
 if (import.meta.client) {
   const p = new URLSearchParams(location.search)
