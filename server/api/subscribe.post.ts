@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   const audienceId = process.env.RESEND_AUDIENCE_ID
   const siteUrl = process.env.SITE_URL || 'https://kalilnica-idej.vercel.app'
-  const fromEmail = process.env.FROM_EMAIL || 'Kalilnica idej <onboarding@resend.dev>'
+  const fromEmail = process.env.FROM_EMAIL || 'Kalilnica idej <info@kalilnica-idej.si>'
 
   // Add to Resend audience (ignore if contact already exists)
   if (audienceId) {

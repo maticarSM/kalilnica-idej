@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const siteUrl = process.env.SITE_URL || 'https://kalilnica-idej.vercel.app'
-  const fromEmail = process.env.FROM_EMAIL || 'Kalilnica idej <onboarding@resend.dev>'
+  const fromEmail = process.env.FROM_EMAIL || 'Kalilnica idej <info@kalilnica-idej.si>'
 
   // Get post details
   const post: any = await $fetch(`/api/posts/${slug}`).catch(() => null)

@@ -14,7 +14,8 @@
         <nav class="nav" :class="{ open: menuOpen }">
           <a class="nav__link" href="#" @click.prevent="scrollTo('hero'); menuOpen=false">Domov</a>
           <a class="nav__link" href="#" @click.prevent="scrollTo('blog'); menuOpen=false">Članki</a>
-          <a class="nav__link" href="#" @click.prevent="scrollTo('about'); menuOpen=false">O blogu</a>
+          <a class="nav__link" href="#" @click.prevent="scrollTo('dogodki'); menuOpen=false">Dogodki</a>
+          <a class="nav__link" href="#" @click.prevent="scrollTo('about'); menuOpen=false">O nas</a>
           <NuxtLink class="nav__cta" to="/admin">Admin</NuxtLink>
         </nav>
         <button class="burger" :class="{ active: menuOpen }" @click="menuOpen=!menuOpen">
@@ -31,25 +32,25 @@
       <div class="container hero__body">
         <div class="hero__copy">
           <div class="hero__badge">
-            <span class="hero__dot"></span>Dobrodošli v kalilnici
+            <span class="hero__dot"></span>Skupnost podjetnikov · Bukovica
           </div>
-          <h1 class="hero__title">Ideje, ki<br><span class="grad-text">oblikujejo jutri</span></h1>
+          <h1 class="hero__title">Prostor, kjer<br><span class="grad-text">ideje dobijo zagon</span></h1>
           <p class="hero__sub">
-            Prostor za misli, ki ne dajo spati. Za ideje, ki čakajo, da jih nekdo izreče.
+            Skupnost mladih podjetnikov, ustvarjalcev in vseh, ki želijo svoje ideje razviti v nekaj konkretnega.
           </p>
           <div class="hero__actions">
-            <a href="#" class="btn btn--primary" @click.prevent="scrollTo('blog')">
-              Odkrijte ideje
+            <a href="#" class="btn btn--primary" @click.prevent="scrollTo('about')">
+              Spoznaj nas
               <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h11M8.5 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
-            <a href="#" class="btn btn--ghost" @click.prevent="scrollTo('about')">O projektu</a>
+            <a href="#" class="btn btn--ghost" @click.prevent="scrollTo('nl')">Pridruži se</a>
           </div>
           <div class="hero__stats">
             <div class="hstat"><span class="hstat__n">{{ posts?.length ?? 0 }}+</span><span class="hstat__l">Objav</span></div>
             <div class="hstat__sep"></div>
-            <div class="hstat"><span class="hstat__n">6</span><span class="hstat__l">Kategorij</span></div>
+            <div class="hstat"><span class="hstat__n">2+</span><span class="hstat__l">Projektov</span></div>
             <div class="hstat__sep"></div>
-            <div class="hstat"><span class="hstat__n">2026</span><span class="hstat__l">Leto</span></div>
+            <div class="hstat"><span class="hstat__n">2022</span><span class="hstat__l">Od leta</span></div>
           </div>
         </div>
 
@@ -67,9 +68,9 @@
     <section id="blog" class="blog">
       <div class="container">
         <div class="sec-head reveal">
-          <p class="eyebrow">Zadnje objave</p>
+          <p class="eyebrow">Podjetniške zgodbe</p>
           <h2 class="sec-title">Sveže iz <span class="grad-text">kalilnice</span></h2>
-          <p class="sec-sub">Izbrane misli in ideje, ki so vredne vašega časa.</p>
+          <p class="sec-sub">Misli, izkušnje in ideje iz naše skupnosti.</p>
         </div>
 
         <template v-if="posts && posts.length">
@@ -113,15 +114,39 @@
       </div>
     </section>
 
+    <!-- DOGODKI -->
+    <section id="dogodki" class="dogodki">
+      <div class="container">
+        <div class="sec-head reveal">
+          <p class="eyebrow">Skupnost v akciji</p>
+          <h2 class="sec-title">Dogodki & <span class="grad-text">srečanja</span></h2>
+          <p class="sec-sub">Predavanja, pogovori in srečanja z uspešnimi podjetniki.</p>
+        </div>
+        <div class="dogodki-grid">
+          <div class="dogodek reveal">
+            <div class="dogodek__icon">🤝</div>
+            <div class="dogodek__body">
+              <span class="dogodek__date">November 2024</span>
+              <h3 class="dogodek__title">Podjetniške kavarne (SBC)</h3>
+              <p class="dogodek__desc">Srečanje s podjetniki v okviru Smart Business Connect — izmenjava izkušenj in navezovanje stikov z lokalnim poslovnim ekosistemom.</p>
+            </div>
+          </div>
+        </div>
+        <p class="dogodki-note reveal">Prihajajoče dogodke objavljamo na <a href="https://www.instagram.com/kalilnica.idej/" target="_blank" rel="noopener">Instagramu</a> in prek e-obvestil.</p>
+      </div>
+    </section>
+
     <!-- ABOUT -->
     <section id="about" class="about">
       <div class="container about__grid">
         <div class="about__copy reveal">
-          <p class="eyebrow">O Kalilnici</p>
-          <h2 class="sec-title">Kje ideje<br><span class="grad-text">postanejo besede</span></h2>
+          <p class="eyebrow">O Kalilnici idej</p>
+          <h2 class="sec-title">Skupnost za<br><span class="grad-text">mlade podjetnike</span></h2>
           <p class="about__text">
-            Kalilnica idej je prostor, kjer se misli ne bojijo biti nedokončane.
-            Tukaj pišemo o tem, kar nas navdušuje, bega ali navdihuje.
+            Kalilnica idej je prostor za mlade, ki razmišljajo podjetniško. Namenjena je tistim, ki že imajo poslovno idejo, razvijajo projekt, začenjajo samostojno pot ali pa si želijo biti del okolja, kjer se podjetnost spodbuja na praktičen in dostopen način.
+          </p>
+          <p class="about__text" style="margin-top:12px">
+            Vodita jo mlada podjetnika <strong style="color:#fff">Nejc Perkon</strong> in <strong style="color:#fff">Anej Vidmar</strong>. Skupaj s člani gradita okolje, kjer si mladi med seboj pomagajo, delijo znanje in skupaj iščejo nove priložnosti.
           </p>
           <ul class="about__list">
             <li v-for="f in features" :key="f">
@@ -139,10 +164,10 @@
         <div class="about__visual reveal">
           <div class="quote-card">
             <div class="quote-card__mark">"</div>
-            <p class="quote-card__text">Ideje so kot semena — potrebujejo pravo zemljo, da vzkalijo. Ta blog je tista zemlja.</p>
+            <p class="quote-card__text">Ker je podjetniška pot lažja, ko nisi sam. V Kalilnici idej dobiš prostor, podporo in ljudi, ki razumejo, kaj pomeni razvijati nekaj svojega.</p>
             <div class="quote-card__author">
               <div class="quote-card__avatar"></div>
-              <div><strong>Avtor bloga</strong><span>Mislec, pisec, sanjač</span></div>
+              <div><strong>Nejc Perkon & Anej Vidmar</strong><span>Soustanovitelja Kalilnice idej</span></div>
             </div>
           </div>
           <div class="about__orb about__orb--a"></div>
@@ -151,17 +176,40 @@
       </div>
     </section>
 
+    <!-- DOSEŽKI -->
+    <section class="dosezki">
+      <div class="container">
+        <div class="sec-head reveal">
+          <p class="eyebrow">Naši dosežki</p>
+          <h2 class="sec-title">Ideje, ki so <span class="grad-text">postale resničnost</span></h2>
+          <p class="sec-sub">Projekti, ki so nastali ali se razvili pod okriljem Kalilnice idej.</p>
+        </div>
+        <div class="dosezki-grid">
+          <div class="dosezek reveal">
+            <div class="dosezek__num grad-text">01</div>
+            <h3 class="dosezek__title">GO-SUP d.o.o.</h3>
+            <p class="dosezek__desc">Turistična ponudba, ki povezuje aktivno doživetje, naravo in lokalno okolje. Pod okriljem podjetja sta se razvili blagovni znamki <strong>VIPAVA SUP ADVENTURE</strong> — SUP izleti z eno-gastronomsko ponudbo — in <strong>SUPKULTURA</strong> — bar & turistično-informacijska točka. Podjetje je pridobilo tudi ekskluzivno zastopstvo za prodajo SUP opreme znamke UONE.</p>
+          </div>
+          <div class="dosezek reveal">
+            <div class="dosezek__num grad-text">02</div>
+            <h3 class="dosezek__title">Didaktična ekološka kmetija</h3>
+            <p class="dosezek__desc">Ideja o vzpostavitvi prve učne ekološke kmetije v Vipavski dolini — prostor za pridobivanje praktičnih znanj s področja kmetijstva, narave in trajnostnega načina življenja. Projekt vključuje delavnice, terapevtske dejavnosti in razvoj lokalnih tržnih povezav po načelu <em>od vil do vilic</em>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- NEWSLETTER -->
-    <section class="nl">
+    <section id="nl" class="nl">
       <div class="nl__bg"></div>
       <div class="container nl__wrap">
-        <p class="eyebrow">Ostanite v stiku</p>
-        <h2 class="nl__title">Ne zamudite <span class="grad-text">nobene ideje</span></h2>
-        <p class="nl__sub">Vsak teden ena misel, ki bo morda spremenila vaš dan.</p>
+        <p class="eyebrow">Pridruži se skupnosti</p>
+        <h2 class="nl__title">Naredi <span class="grad-text">prvi korak</span></h2>
+        <p class="nl__sub">Imaš idejo, projekt ali samo željo po ustvarjanju? Pridruži se in postani del skupnosti, kjer podjetniške zamisli dobijo prostor za rast.</p>
         <form class="nl__form" @submit.prevent="subscribe">
           <input v-model="email" type="email" placeholder="vas@email.com" class="nl__input" :disabled="subscribed || subLoading" />
           <button type="submit" class="btn btn--primary" :disabled="subscribed || subLoading">
-            {{ subscribed ? '✓ Prijavljeni!' : subLoading ? 'Pošiljam...' : 'Prijava' }}
+            {{ subscribed ? '✓ Prijavljeni!' : subLoading ? 'Pošiljam...' : 'Pridruži se' }}
           </button>
         </form>
         <p v-if="subError" class="nl__note" style="color:#fca5a5">{{ subError }}</p>
@@ -176,7 +224,11 @@
           <a href="#" class="logo" @click.prevent="scrollTo('hero')">
             <span class="logo__name">Kalilnica <em>idej</em></span>
           </a>
-          <p>Prostor za misli, ki štejejo.</p>
+          <p>Prostor za mlade podjetnike v Bukovici.</p>
+          <p class="footer__address">
+            Bukovica 43, 5293 Volčja Draga<br>
+            <a href="mailto:info@kalilnica-idej.si">info@kalilnica-idej.si</a>
+          </p>
           <div class="footer__social">
             <a href="https://www.instagram.com/kalilnica.idej/" target="_blank" rel="noopener" aria-label="Instagram"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
           </div>
@@ -186,16 +238,18 @@
             <h4>Navigacija</h4>
             <a href="#" @click.prevent="scrollTo('hero')">Domov</a>
             <a href="#" @click.prevent="scrollTo('blog')">Članki</a>
-            <a href="#" @click.prevent="scrollTo('about')">O blogu</a>
+            <a href="#" @click.prevent="scrollTo('dogodki')">Dogodki</a>
+            <a href="#" @click.prevent="scrollTo('about')">O nas</a>
           </div>
           <div class="footer__col">
-            <h4>Povežite se</h4>
-            <a href="https://www.instagram.com/kalilnica.idej/" target="_blank" rel="noopener">Kontakt</a>
+            <h4>Kontakt</h4>
+            <a href="mailto:info@kalilnica-idej.si">info@kalilnica-idej.si</a>
+            <a href="https://www.instagram.com/kalilnica.idej/" target="_blank" rel="noopener">Instagram</a>
             <NuxtLink to="/zasebnost">Zasebnost</NuxtLink>
           </div>
         </div>
       </div>
-      <div class="footer__bar"><div class="container footer__bottom"><span>© 2026 Kalilnica idej</span><span>Narejeno z <span class="heart">♥</span> in kavo</span></div></div>
+      <div class="footer__bar"><div class="container footer__bottom"><span>© 2026 Kalilnica idej</span><span>Bukovica 43, 5293 Volčja Draga</span></div></div>
     </footer>
 
   </div>
@@ -346,10 +400,13 @@ onUnmounted(() => {
 })
 
 const features = [
-  'Iskreno pisanje brez korporativnega žargona',
-  'Ideje, ki spodbujajo globoko razmišljanje',
-  'Skupnost radovednih mislecev',
-  'Novi članki vsak teden'
+  'Prostor za delo in srečevanja v Bukovici',
+  'Predavanja in mentorstvo iz podjetniških področij',
+  'Izmenjava znanja in izkušenj med člani',
+  'Podpora pri razvoju idej in prvih korakih',
+  'Pogovori z uspešnimi podjetniki',
+  'Podcast vsebine in podjetniške zgodbe',
+  'Praktični nasveti (marketing, samozaposlitev, prodaja)'
 ]
 </script>
 
@@ -388,6 +445,20 @@ const features = [
 .blog-empty { text-align:center; padding:60px 0; color:var(--muted); }
 .blog-empty a { color:var(--blue-lt); text-decoration:none; }
 
+/* DOGODKI */
+.dogodki { padding:100px 0; background:var(--bg); }
+.dogodki-grid { display:flex; flex-direction:column; gap:16px; max-width:720px; margin:0 auto; }
+.dogodek { display:flex; gap:24px; align-items:flex-start; background:var(--glass); border:1px solid var(--border); border-radius:var(--r); padding:28px 32px; backdrop-filter:blur(10px); transition:border-color .3s; }
+.dogodek:hover { border-color:var(--ba); }
+.dogodek__icon { font-size:2rem; flex-shrink:0; line-height:1; }
+.dogodek__body { display:flex; flex-direction:column; gap:6px; }
+.dogodek__date { font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--blue-lt); }
+.dogodek__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:1.1rem; font-weight:700; color:#fff; margin:0; }
+.dogodek__desc { font-size:.9rem; color:var(--muted); line-height:1.7; margin:0; }
+.dogodki-note { text-align:center; margin-top:28px; font-size:.85rem; color:var(--dim); }
+.dogodki-note a { color:var(--blue-lt); text-decoration:none; }
+.dogodki-note a:hover { text-decoration:underline; }
+
 /* ABOUT */
 .about { padding:120px 0; }
 .about__grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
@@ -407,8 +478,19 @@ const features = [
 .about__orb--a { width:280px; height:280px; background:rgba(79,70,229,.12); top:-80px; right:-60px; }
 .about__orb--b { width:200px; height:200px; background:rgba(6,182,212,.08); bottom:-60px; left:-40px; }
 
+/* DOSEŽKI */
+.dosezki { padding:100px 0; background:var(--bg2); }
+.dosezki-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:16px; }
+.dosezek { background:var(--glass); border:1px solid var(--border); border-radius:var(--r); padding:36px; backdrop-filter:blur(10px); transition:border-color .3s; }
+.dosezek:hover { border-color:var(--ba); }
+.dosezek__num { font-family:'Space Grotesk',system-ui,sans-serif; font-size:2.8rem; font-weight:800; letter-spacing:-.05em; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:12px; line-height:1; }
+.dosezek__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:1.15rem; font-weight:700; color:#fff; margin:0 0 14px; }
+.dosezek__desc { font-size:.9rem; color:var(--muted); line-height:1.75; margin:0; }
+.dosezek__desc strong { color:rgba(238,242,255,.75); font-weight:600; }
+.dosezek__desc em { font-style:italic; }
+
 /* NEWSLETTER */
-.nl { padding:120px 0; background:var(--bg2); position:relative; overflow:hidden; }
+.nl { padding:120px 0; background:var(--bg); position:relative; overflow:hidden; }
 .nl__bg { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:700px; height:350px; background:radial-gradient(ellipse,rgba(79,70,229,.1),transparent); pointer-events:none; }
 .nl__wrap { position:relative; text-align:center; display:flex; flex-direction:column; align-items:center; gap:18px; max-width:580px; margin:0 auto; }
 .nl__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:clamp(1.9rem,3.5vw,2.8rem); font-weight:800; letter-spacing:-.04em; color:#fff; }
@@ -419,10 +501,16 @@ const features = [
 .nl__input::placeholder { color:var(--dim); }
 .nl__note { font-size:.77rem; color:var(--dim); }
 
+/* FOOTER */
+.footer__address { font-size:.82rem; color:var(--dim); line-height:1.7; margin-top:10px; }
+.footer__address a { color:var(--dim); text-decoration:none; transition:color .2s; }
+.footer__address a:hover { color:var(--blue-lt); }
+
 /* RESPONSIVE */
 @media (max-width: 1024px) {
   .posts-grid { grid-template-columns:repeat(2,1fr); }
   .about__grid { grid-template-columns:1fr; gap:52px; }
+  .dosezki-grid { grid-template-columns:1fr; }
   .hero__body { grid-template-columns:1fr; }
   .hero__logo-col { max-width:400px; margin:0 auto; }
 }
@@ -437,6 +525,7 @@ const features = [
   .nl__form { flex-direction:column; }
   .hero__scroll { display:none; }
   .hero__logo-col { max-width:300px; }
+  .dogodek { flex-direction:column; gap:14px; }
 }
 
 /* SYSTEM TOAST */
