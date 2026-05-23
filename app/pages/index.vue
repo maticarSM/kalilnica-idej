@@ -122,16 +122,18 @@
           <h2 class="sec-title">Dogodki & <span class="grad-text">srečanja</span></h2>
           <p class="sec-sub">Predavanja, pogovori in srečanja z uspešnimi podjetniki.</p>
         </div>
-        <div class="dogodki-grid">
-          <div class="dogodek reveal">
-            <div class="dogodek__icon">🤝</div>
+        <div v-if="dogodki && dogodki.length" class="dogodki-grid">
+          <div v-for="d in dogodki" :key="d.slug" class="dogodek reveal">
+            <div class="dogodek__icon">{{ d.emoji }}</div>
             <div class="dogodek__body">
-              <span class="dogodek__date">November 2024</span>
-              <h3 class="dogodek__title">Podjetniške kavarne (SBC)</h3>
-              <p class="dogodek__desc">Srečanje s podjetniki v okviru Smart Business Connect — izmenjava izkušenj in navezovanje stikov z lokalnim poslovnim ekosistemom.</p>
+              <span class="dogodek__date">{{ d.date }}<span v-if="d.location"> · {{ d.location }}</span></span>
+              <h3 class="dogodek__title">{{ d.title }}</h3>
+              <p class="dogodek__desc">{{ d.content }}</p>
+              <a v-if="d.link" :href="d.link" target="_blank" rel="noopener" class="dogodek__link">Več info →</a>
             </div>
           </div>
         </div>
+        <p v-else class="dogodki-note reveal" style="text-align:center;padding:40px 0;color:var(--dim)">Kmalu bo tu prvi dogodek.</p>
         <p class="dogodki-note reveal">Prihajajoče dogodke objavljamo na <a href="https://www.instagram.com/kalilnica.idej/" target="_blank" rel="noopener">Instagramu</a> in prek e-obvestil.</p>
       </div>
     </section>
@@ -184,16 +186,36 @@
           <h2 class="sec-title">Ideje, ki so <span class="grad-text">postale resničnost</span></h2>
           <p class="sec-sub">Projekti, ki so nastali ali se razvili pod okriljem Kalilnice idej.</p>
         </div>
-        <div class="dosezki-grid">
-          <div class="dosezek reveal">
-            <div class="dosezek__num grad-text">01</div>
-            <h3 class="dosezek__title">GO-SUP d.o.o.</h3>
-            <p class="dosezek__desc">Turistična ponudba, ki povezuje aktivno doživetje, naravo in lokalno okolje. Pod okriljem podjetja sta se razvili blagovni znamki <strong>VIPAVA SUP ADVENTURE</strong> — SUP izleti z eno-gastronomsko ponudbo — in <strong>SUPKULTURA</strong> — bar & turistično-informacijska točka. Podjetje je pridobilo tudi ekskluzivno zastopstvo za prodajo SUP opreme znamke UONE.</p>
+        <div v-if="projekti && projekti.length" class="dosezki-grid">
+          <div v-for="p in projekti" :key="p.slug" class="dosezek reveal">
+            <div class="dosezek__num grad-text">{{ p.num }}</div>
+            <div class="dosezek__header">
+              <span class="dosezek__emoji">{{ p.emoji }}</span>
+              <h3 class="dosezek__title">{{ p.title }}</h3>
+            </div>
+            <p class="dosezek__sub">{{ p.subtitle }}</p>
+            <p class="dosezek__desc">{{ p.content }}</p>
+            <a v-if="p.link" :href="p.link" target="_blank" rel="noopener" class="dosezek__link">Več o projektu →</a>
           </div>
-          <div class="dosezek reveal">
-            <div class="dosezek__num grad-text">02</div>
-            <h3 class="dosezek__title">Didaktična ekološka kmetija</h3>
-            <p class="dosezek__desc">Ideja o vzpostavitvi prve učne ekološke kmetije v Vipavski dolini — prostor za pridobivanje praktičnih znanj s področja kmetijstva, narave in trajnostnega načina življenja. Projekt vključuje delavnice, terapevtske dejavnosti in razvoj lokalnih tržnih povezav po načelu <em>od vil do vilic</em>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ZGODBE O USPEHU -->
+    <section v-if="zgodbe && zgodbe.length" class="zgodbe">
+      <div class="container">
+        <div class="sec-head reveal">
+          <p class="eyebrow">Iz naše skupnosti</p>
+          <h2 class="sec-title">Zgodbe o <span class="grad-text">uspehu</span></h2>
+          <p class="sec-sub">Podjetniki in ustvarjalci, ki so svojo idejo spremenili v resničnost.</p>
+        </div>
+        <div class="zgodbe-grid">
+          <div v-for="z in zgodbe" :key="z.slug" class="zgodba reveal">
+            <div class="zgodba__icon">{{ z.emoji }}</div>
+            <h3 class="zgodba__title">{{ z.title }}</h3>
+            <p class="zgodba__person">{{ z.person }}<span v-if="z.role"> · {{ z.role }}</span></p>
+            <p class="zgodba__desc">{{ z.content }}</p>
+            <a v-if="z.link" :href="z.link" target="_blank" rel="noopener" class="zgodba__link">Spletna stran →</a>
           </div>
         </div>
       </div>
@@ -258,7 +280,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const { data: posts } = await useAsyncData('posts', () => $fetch('/api/posts'))
+const { data: posts }    = await useAsyncData('posts',    () => $fetch('/api/posts'))
+const { data: projekti } = await useAsyncData('projekti', () => $fetch('/api/projekti'))
+const { data: zgodbe }   = await useAsyncData('zgodbe',   () => $fetch('/api/zgodbe'))
+const { data: dogodki }  = await useAsyncData('dogodki',  () => $fetch('/api/dogodki'))
 
 const toast = ref('')
 if (import.meta.client) {
@@ -456,6 +481,8 @@ const features = [
 .dogodek__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:1.1rem; font-weight:700; color:#fff; margin:0; }
 .dogodek__desc { font-size:.9rem; color:var(--muted); line-height:1.7; margin:0; }
 .dogodki-note { text-align:center; margin-top:28px; font-size:.85rem; color:var(--dim); }
+.dogodek__link { font-size:.82rem; color:var(--blue-lt); text-decoration:none; font-weight:600; margin-top:6px; display:inline-block; }
+.dogodek__link:hover { text-decoration:underline; }
 .dogodki-note a { color:var(--blue-lt); text-decoration:none; }
 .dogodki-note a:hover { text-decoration:underline; }
 
@@ -483,11 +510,26 @@ const features = [
 .dosezki-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:16px; }
 .dosezek { background:var(--glass); border:1px solid var(--border); border-radius:var(--r); padding:36px; backdrop-filter:blur(10px); transition:border-color .3s; }
 .dosezek:hover { border-color:var(--ba); }
-.dosezek__num { font-family:'Space Grotesk',system-ui,sans-serif; font-size:2.8rem; font-weight:800; letter-spacing:-.05em; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:12px; line-height:1; }
-.dosezek__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:1.15rem; font-weight:700; color:#fff; margin:0 0 14px; }
-.dosezek__desc { font-size:.9rem; color:var(--muted); line-height:1.75; margin:0; }
-.dosezek__desc strong { color:rgba(238,242,255,.75); font-weight:600; }
-.dosezek__desc em { font-style:italic; }
+.dosezek__num { font-family:'Space Grotesk',system-ui,sans-serif; font-size:2.4rem; font-weight:800; letter-spacing:-.05em; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:10px; line-height:1; }
+.dosezek__header { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.dosezek__emoji { font-size:1.4rem; }
+.dosezek__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:1.1rem; font-weight:700; color:#fff; margin:0; }
+.dosezek__sub { font-size:.78rem; color:var(--blue-lt); font-weight:600; letter-spacing:.04em; margin:0 0 10px; }
+.dosezek__desc { font-size:.88rem; color:var(--muted); line-height:1.75; margin:0 0 12px; }
+.dosezek__link { font-size:.82rem; color:var(--blue-lt); text-decoration:none; font-weight:600; }
+.dosezek__link:hover { text-decoration:underline; }
+
+/* ZGODBE O USPEHU */
+.zgodbe { padding:100px 0; background:var(--bg); }
+.zgodbe-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.zgodba { background:var(--glass); border:1px solid var(--border); border-radius:var(--r); padding:28px; backdrop-filter:blur(10px); transition:border-color .3s; display:flex; flex-direction:column; gap:8px; }
+.zgodba:hover { border-color:var(--ba); }
+.zgodba__icon { font-size:2rem; }
+.zgodba__title { font-family:'Space Grotesk',system-ui,sans-serif; font-size:1rem; font-weight:700; color:#fff; margin:0; }
+.zgodba__person { font-size:.75rem; color:var(--blue-lt); font-weight:600; letter-spacing:.04em; margin:0; }
+.zgodba__desc { font-size:.85rem; color:var(--muted); line-height:1.7; margin:0; flex:1; }
+.zgodba__link { font-size:.8rem; color:var(--cyan); text-decoration:none; font-weight:600; margin-top:4px; }
+.zgodba__link:hover { text-decoration:underline; }
 
 /* NEWSLETTER */
 .nl { padding:120px 0; background:var(--bg); position:relative; overflow:hidden; }
@@ -511,6 +553,7 @@ const features = [
   .posts-grid { grid-template-columns:repeat(2,1fr); }
   .about__grid { grid-template-columns:1fr; gap:52px; }
   .dosezki-grid { grid-template-columns:1fr; }
+  .zgodbe-grid { grid-template-columns:repeat(2,1fr); }
   .hero__body { grid-template-columns:1fr; }
   .hero__logo-col { max-width:400px; margin:0 auto; }
 }
@@ -526,6 +569,7 @@ const features = [
   .hero__scroll { display:none; }
   .hero__logo-col { max-width:300px; }
   .dogodek { flex-direction:column; gap:14px; }
+  .zgodbe-grid { grid-template-columns:1fr; }
 }
 
 /* SYSTEM TOAST */
